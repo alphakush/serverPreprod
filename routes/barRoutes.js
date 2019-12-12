@@ -6,9 +6,41 @@ const multer = require('multer');
 const checkingAuth = require("../middlewares/checkingAuth");
 const ArrayToString = require ('./base64ArrayBuffer');
 const { contactEmail } = require('../emails/account');
+var NodeGeocoder = require('node-geocoder');
 
 const Bar = mongoose.model('Bar');
 const router = express.Router();
+
+
+var options = {
+    provider: 'openstreetmap',
+   
+    // Optional depending on the providers
+    httpAdapter: 'https', // Default
+    apiKey: 'YOUR_API_KEY', // for Mapquest, OpenCage, Google Premier
+    formatter: null         // 'gpx', 'string', ...
+};
+
+var geocoder = NodeGeocoder(options);
+
+
+router.post(config.rootAPI + '/test-geolocalisation', (req, res) => {
+    try {
+        const {address } = req.body;
+        if(!address) {
+            throw 'adresse manquante';
+        }
+
+        geocoder.geocode(address, function(err, res) {
+            res.status(200).send(res);
+          });
+
+        
+    } catch (err) {
+        res.status(422).send({error: "Une erreur s'est produite"})
+    }
+});
+
 
 //Acces to the screen, only for connected users
 //router.use(checkingAuth);

@@ -13,8 +13,23 @@ const barSchema = new mongoose.Schema({
     tags: {
         type: Array,
     },
-    adress: {
+    address: {
         type: String,
+        required: true,
+        trim: true,
+    },
+    latitude: {
+        type: String,
+        required: true,
+        trim: true,
+    },
+    longitude: {
+        type: String,
+        required: true,
+        trim: true,
+    },
+    phone: {
+        type:String,
         required: true,
         trim: true,
     },
