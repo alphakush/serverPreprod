@@ -19,12 +19,12 @@ const barSchema = new mongoose.Schema({
         trim: true,
     },
     latitude: {
-        type: String,
+        type: Number,
         required: true,
         trim: true,
     },
     longitude: {
-        type: String,
+        type: Number,
         required: true,
         trim: true,
     },
