@@ -12,11 +12,11 @@ const welcomeEmail = (email, name) => {
 }
 
 
-const contactEmail = (email, message) => {
+const contactEmail = (email,objet, message) => {
     sgMail.send({
         to: email,
         from: 'contact-baraka@gmail.com',
-        subject: 'Bienvenue',
+        subject: `${objet}`,
         text: `${message}`
     })
 }
