@@ -14,7 +14,7 @@ const router = express.Router();
 
 var options = {
     provider: 'openstreetmap',
-   
+
     // Optional depending on the providers
     httpAdapter: 'https', // Default
     apiKey: 'YOUR_API_KEY', // for Mapquest, OpenCage, Google Premier
@@ -35,7 +35,7 @@ router.post(config.rootAPI + '/test-geolocalisation', (req, res) => {
             res.status(200).send(res);
           });
 
-        
+
     } catch (err) {
         res.status(422).send({error: "Une erreur s'est produite"})
     }
@@ -46,7 +46,7 @@ router.post(config.rootAPI + '/test-geolocalisation', (req, res) => {
 //router.use(checkingAuth);
 
 // methods format
-function createresponse(data) { 
+function createresponse(data) {
     var result = [];
 
     for (const k in data) {
@@ -66,7 +66,7 @@ function createresponse(data) {
         }
     }
     return result;
-} 
+}
 
 // get all bars
 router.get(config.rootAPI + '/allbars', async (req, res) => {
@@ -118,11 +118,11 @@ router.post(config.rootAPI + '/bar/create-bar', upload.single('upload-bar'), asy
 
 router.post(config.rootAPI + '/contact-us', (req, res) => {
     try {
-        const {email, message } = req.body;
-        if(!email || !message) {
+        const {email, objet, message } = req.body;
+        if(!email || !message || !objet) {
             throw 'Merci de compléter tous les champs (e-mail, password)';
         }
-        contactEmail(email, message)
+        contactEmail(email, objet, message)
         res.status(200).send("OK");
     } catch (err) {
         res.status(422).send({error: "Votre message n'a pas pu être transmis."})
