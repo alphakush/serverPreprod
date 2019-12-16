@@ -14,15 +14,15 @@ const router = express.Router();
 
 var options = {
     provider: 'google',
-    httpAdapter: 'https', // Default
-    apiKey: process.env.GOOGLE_API_KEY, // for Mapquest, OpenCage, Google Premier
-    formatter: null         // 'gpx', 'string', ...
+    httpAdapter: 'https', 
+    apiKey: process.env.GOOGLE_API_KEY,
+    formatter: null
 };
 
 var geocoder = NodeGeocoder(options);
 
+//con st {name, description, tags, address, note, products, phone } = userSend;
 async function getResult (address) {
-    //con st {name, description, tags, address, note, products, phone } = userSend;
 
     const resultat = {}
     geocoder.geocode(address.toString())
@@ -47,39 +47,8 @@ async function msg(address) {
     return res;
   }
 
-router.post(config.rootAPI + '/test-geolocalisation', async (req, res) => {
-    try {
-        const {address } = req.body;
-        if(!address) {
-            throw 'adresse manquante';
-        }
-
-        const resultat = {}
-
-        geocoder.geocode(address.toString())
-        .then(function(resT) {
-            
-            const latitude = resT[0].latitude;
-            const longitude = resT[0].longitude;
-            resultat["latitude"] = latitude;
-            resultat["longitude"] = longitude;
-            
-         })
-         .then(function(resT) {
-            res.send(resultat);
-         })
-         .catch(function(err) {
-             console.log(err);
-        });
-
-    } catch (err) {
-        res.send(err);
-    }
-});
-
 //Acces to the screen, only for connected users
 //router.use(checkingAuth);
-
 
 // methods format the response
 function createresponse(data) { 
@@ -99,20 +68,23 @@ function createresponse(data) {
                 var latitude = data[k].latitude;
                 var longitude = data[k].longitude;
                 var imageToString = ArrayToString(image);
-                result.push({ 'id': id,'name': name, 'description': description, 'tags': tags, 'address': address,'latitude': latitude, 'longitude': longitude, 'note': note, 'image': imageToString, 'product': product });
+                result.push({ 'id': id,'name': name, 'description': description, 'tags': tags, 'address': address,'latitude': latitude, 'longitude': longitude, 'note': note,'image': imageToString, 'product': product });
             };
         }
     }
     return result;
-}
+} 
 
-// get all bars
+// Route pour obtenir tous les bars disponibles
 router.get(config.rootAPI + '/allbars', async (req, res) => {
     const barFound = await Bar.find({});
     const result = createresponse(barFound);
+    console.log("Get all bars");
+    console.log(result);
     res.send(result);
 });
 
+//Route pour obtenur un bar par nom. Example barname: wallace
 router.get(config.rootAPI + '/bar/:barname', async (req, res) => {
     const barName = req.params.barname;
     const barRegex = new RegExp("^" + barName, 'i');
@@ -123,6 +95,7 @@ router.get(config.rootAPI + '/bar/:barname', async (req, res) => {
     res.send(result);
 });
 
+// Les conditions pour  uploader une image
 const upload = multer({
     limits: {
         //Max of file 1Mo= 1000000 bytes.
@@ -136,27 +109,26 @@ const upload = multer({
     }
 });
 
+// Router pour créer un bar. Il faut renseigner : nom, description, tags, téléphone, tags, téléphone du bar, addresse, produits et images.
 router.post(config.rootAPI + '/bar/create-bar', upload.single('upload-bar'), async (req, res) => {
     try {
         const {name, description, tags, address, note, products, phone } = req.body;
         if(!name || !description ||  !tags || !address || !note || !products || !phone ){
-            throw '1.Merci de remplir toutes les champs pour créer un bar à savoir :nom, description, tags, téléphone,  addresse, produits et images';
+            throw 'Merci de remplir toutes les champs pour créer un bar à savoir :nom, description, tags, téléphone,  addresse, produits et images';
         }
         const image = req.file.buffer;
-        const imageCrop = await sharp(image).resize({ width: 820, height: 360 }).png().toBuffer();
-
+        const imageCrop = await sharp(image).resize( 820,360, {fit: sharp.fit.inside, withoutEnlargement: true}).png().toBuffer();
         const resultat = {};
-
+        //pour obtenir la longittude et latitude
         geocoder.geocode(address.toString())
         .then(function(resT) {
             resultat["latitude"] = resT[0].latitude;
             resultat["longitude"] = resT[0].longitude;
          })
          .then(async function() {
-             console.log('name' + name);
             const bar = new Bar({'name':name, description, tags, address, 'latitude': resultat.latitude,  'longitude' : resultat.longitude, phone, note, 'image': imageCrop, products });
             await bar.save();
-            res.status(201).send("OK");
+            res.status(201).send({success: "OK"});
          })
          .catch(function(err) {
             res.status(422).send(err)
@@ -169,13 +141,14 @@ router.post(config.rootAPI + '/bar/create-bar', upload.single('upload-bar'), asy
     res.status(422).send({ error: error.message })
 });
 
+//Router pour nous contacter
 router.post(config.rootAPI + '/contact-us', (req, res) => {
     try {
-        const {email, objet, message } = req.body;
-        if(!email || !message || !objet) {
+        const {email, message } = req.body;
+        if(!email || !message) {
             throw 'Merci de compléter tous les champs (e-mail, password)';
         }
-        contactEmail(email, objet, message)
+        contactEmail(email, message)
         res.status(200).send("OK");
     } catch (err) {
         res.status(422).send({error: "Votre message n'a pas pu être transmis."})

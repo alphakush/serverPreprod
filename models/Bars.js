@@ -53,6 +53,8 @@ const barSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         required: false
     }
+},{
+    timestamps: true
 });
 
 mongoose.model('Bar',barSchema);

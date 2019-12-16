@@ -24,12 +24,12 @@ router.post(config.rootAPI+'/signin', async (req,res) => {
     const { email, password } = req.body;
     console.log("email : " + email + " password: " + password );
     if (!email || !password) {
-        return res.status(422).send({ error: "1. Le mot de passe ou l'e-mail est invalide" });
+        return res.status(422).send({ error: "Le mot de passe ou l'e-mail est invalide" });
     }
 
     const user = await User.findOne({ email });
     if (!user) {
-        return res.status(422).send({ error: "2. Le mot de passe ou l'e-mail est invalide." });
+        return res.status(422).send({ error: "Le mot de passe ou l'e-mail est invalide." });
     }
 
     try {
@@ -37,7 +37,7 @@ router.post(config.rootAPI+'/signin', async (req,res) => {
         const token = jwt.sign({userId: user._id}, process.env.JWT_SECRET);
         res.send({user,token});
     } catch (err) {
-        return res.status(422).send({error: "3. Le mot de passe ou l'e-mail est invalide"});
+        return res.status(422).send({error: "Le mot de passe ou l'e-mail est invalide"});
     }
 });
 

@@ -16,6 +16,8 @@ const userFavoriteBarSchena = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     }
+}, {
+    timestamps: true
 });
 
 const userSchema = new mongoose.Schema({
@@ -41,8 +43,11 @@ const userSchema = new mongoose.Schema({
         required: true
     },
     favoriteBars: [userFavoriteBarSchena]
+},{
+    timestamps: true
 });
 
+//Suppression du mot de passe de la response.
 userSchema.methods.toJSON = function () {
     const user = this;
     const userObject = user.toObject()
@@ -52,7 +57,7 @@ userSchema.methods.toJSON = function () {
     return userObject
 }
 
-
+//Génération du token, en fonction de l'utilisateur.
 userSchema.methods.generateAuthToken = async function () {
     const user = this
     const token = jwt.sign({ '_id': user._id.toString() }, process.env.JWT_SECRET);
@@ -63,7 +68,7 @@ userSchema.methods.generateAuthToken = async function () {
     return token
 }
 
-//before save the password in DB  hash + salt
+//Avant de sauvegarder on HASH + SALT le mot de passe.
 userSchema.pre('save', function (next) {
     const user = this;
     if (!user.isModified('password')) {
@@ -83,7 +88,7 @@ userSchema.pre('save', function (next) {
     });
 });
 
-// Compare the password
+// Compare le mot de passe soumit et celui en base de données.
 userSchema.methods.comparePassword = function (candidatePassword) {
     const user = this;
     return new Promise((resolve, reject) => {
