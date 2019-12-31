@@ -1,10 +1,28 @@
 const mongoose = require('mongoose');
 
+const commentBarSchena = new mongoose.Schema({
+    barid: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Bar'
+    },
+    comment: {
+        type: String,
+        trim: true
+    },
+    author: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }
+}, {
+    timestamps: true
+});
+
 const barSchema = new mongoose.Schema({
     name: {
         type: String,
         unique: true,
         trim: true,
+        default: ''
     },
     description: {
         type: String,
@@ -51,8 +69,9 @@ const barSchema = new mongoose.Schema({
     },
     managerID: {
         type: mongoose.Schema.Types.ObjectId,
-        required: false
-    }
+        required: false,
+    },
+    comment: [commentBarSchena]
 },{
     timestamps: true
 });

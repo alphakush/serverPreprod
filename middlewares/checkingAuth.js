@@ -8,13 +8,14 @@ module.exports  = (req, res, next) => {
     if(!authorization){
         return res.status(401).send({ error: 'Merci de vous connecter.'});
     }
-    const token = authorization.replace("Beer ", "");
+    const token = authorization.replace("Bearer ", "");
     jwt.verify(token, 'BARAKA_SECRET',async (err, payload) => {
         if(err ){
             return res.status(401).send({error: 'Merci de vous connecter'});
         }
         const {userId } = payload;
 
+        //Une fois connecté on trouve l'user par ID dans la base de donnée.
         const user = await User.findById(userId);
         req.user = user;
         next();

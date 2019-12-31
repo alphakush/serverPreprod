@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const config = require('../config');
 const User = mongoose.model('User');
 const router = express.Router();
-const { welcomeEmail, contactEmail } = require('../emails/account');
+const { welcomeEmail } = require('../emails/account');
 
 router.post(config.rootAPI+'/signup', async (req,res) => {
     try{
@@ -22,7 +22,6 @@ router.post(config.rootAPI+'/signup', async (req,res) => {
 
 router.post(config.rootAPI+'/signin', async (req,res) => {
     const { email, password } = req.body;
-    console.log("email : " + email + " password: " + password );
     if (!email || !password) {
         return res.status(422).send({ error: "Le mot de passe ou l'e-mail est invalide" });
     }

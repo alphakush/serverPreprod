@@ -3,22 +3,17 @@ const bcrypt = require('bcrypt');
 var validator = require('validator');
 const jwt = require('jsonwebtoken');
 
-const userFavoriteBarSchena = new mongoose.Schema({
-    barid: {
+const FavoriteBarSchena = new mongoose.Schema({
+    barID: {
         type: mongoose.Schema.Types.ObjectId,
+        required: true,
         ref: 'Bar'
-    },
-    comment: {
-        type: String,
-        trim: true
-    },
-    author: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
     }
 }, {
     timestamps: true
 });
+
+mongoose.model('testBar', FavoriteBarSchena);
 
 const userSchema = new mongoose.Schema({
     username: {
@@ -42,7 +37,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    favoriteBars: [userFavoriteBarSchena]
+    favorisBar: [FavoriteBarSchena]
 },{
     timestamps: true
 });
