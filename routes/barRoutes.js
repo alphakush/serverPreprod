@@ -1,7 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const config = require('../config');
-const sharp = require('sharp')
+const sharp = require('sharp');
 const multer = require('multer');
 const checkingAuth = require("../middlewares/checkingAuth");
 const ArrayToString = require('./base64ArrayBuffer');
@@ -108,7 +108,7 @@ router.post(config.rootAPI + '/bar/create-bar', upload.single('upload-bar'), asy
             });
 
     } catch (err) {
-        res.status(422).send({ error: '2. Merci de remplir toutes les champs pour créer un bar à savoir :nom, description, tags, addresse, produits et images' })
+        res.status(422).send({ error: 'Merci de remplir toutes les champs pour créer un bar à savoir :nom, description, tags, addresse, produits et images' })
     }
 }, (error, req, res, next) => {
     res.status(422).send({ error: error.message })
@@ -128,14 +128,19 @@ router.post(config.rootAPI + '/contact-us', (req, res) => {
     }
 });
 
-// Route pour ajouter un bar à ses favoris
-router.post(config.rootAPI + '/add-favorite', checkingAuth, async (req, res) => {
+/*
+ *LES ROUTES CI DESSOUS PERMETTENT LA GESTION DES FAVORIS 
+ * 
+ */
+
+// Route pour AJOUTER un bar à ses favoris
+router.post(config.rootAPI + '/bar/add-favorite', checkingAuth, async (req, res) => {
     try {
         const { barID } = req.body;
         const userID = req.user._id; // id de l'utilisateur est retrouvé ici grâce au middleware (cad: checkingAuth)
 
         if (!barID || !userID) {
-            res.status(422).send({ error: "Informations manquantes pour ajouter ce bar à vos favoris !" })
+            throw 'Informations manquantes pour ajouter ce bar à vos favoris !';
         }
 
         const user = await User.findById({ _id: userID });
@@ -149,17 +154,16 @@ router.post(config.rootAPI + '/add-favorite', checkingAuth, async (req, res) => 
     }
 });
 
-// Route pour lister ses bars favoris
+// Route pour LISTER ses bars favoris
 router.get(config.rootAPI + '/my-favorite-bar', checkingAuth, async (req, res) => {
     try {
         const userID = req.user._id; // id de l'utilisateur est retrouvé ici grâce au middleware (cad: checkingAuth)
 
         if (!userID) {
-            res.status(422).send({ error: "Informations manquantes, merci de vous authentifier !" })
+            throw '"Informations manquantes, merci de vous authentifier !';
         }
-
         /*
-        Explication: On trouve un user par ID, ensuite on utilise populate à l'aide ref Bar
+        Explication: On trouve un user par ID, ensuite on utilise populate à l'aide "ref "(cf Model Bar) pour afficher toutes les informations du bar
         */
         User.findById({ _id: userID })
             .populate({
@@ -178,14 +182,11 @@ router.get(config.rootAPI + '/my-favorite-bar', checkingAuth, async (req, res) =
                     }
                     res.status(200).json(resultat);
                 }
-
             });
     } catch (err) {
         res.status(422).send({ error: "Une erreur s'est produite pour ajouter ce bar à vos favoris" });
     }
 });
-
-
 
 // Route pour supprimer un bar de ses favoris
 router.delete(config.rootAPI + '/delete-favorite/:id', checkingAuth, async (req, res) => {
@@ -194,28 +195,101 @@ router.delete(config.rootAPI + '/delete-favorite/:id', checkingAuth, async (req,
         const userID = req.user._id; // id de l'utilisateur est retrouvé ici grâce au middleware (cad: checkingAuth)
 
         if (!id || !userID) {
-            res.status(422).send({ error: "Informations manquantes pour ajouter ce bar à vos favoris !" })
+            throw "Informations manquantes pour supprimer ce bar à vos favoris !";
         }
-        console.log("id : " + id);
+        
+        User.findOne({'favorisBar.barID': id}, {'favorisBar.$': 1}, async (err, data) =>{
+            try {
+                const userDeleteID = data.favorisBar[0]._id;
+                User.updateOne({ _id: userID }, { "$pull": { "favorisBar": { "_id": userDeleteID } }}, { safe: true, multi:true }, function(err, obj) {
+                });
 
-        User.find({
-            'barID': { $in: [
-                mongoose.Types.ObjectId(id),
-            ]}
-        }, function(err, docs){
-            console.log("******************")
-             console.log(docs);
+                res.status(200).send(userDeleteID);
+        } catch (error) {
+                res.status(422).send({ error: "Une erreur s'est produite !" });
+            }
         });
 
-        
-        res.status(200).send(docx);
-        
-
     } catch (err) {
-        res.send(err);
-        //res.status(422).send({ error: "Une erreur s'est produite pour ajouter ce bar à vos favoris" });
+        res.status(422).send({ error: "Une erreur s'est produite pour supprimer ce bar à vos favoris" });
     }
 });
 
+/*
+ *LES ROUTES CI DESSOUS PERMETTENT LA GESTION  D'UN COMMENTAIRE UN BAR 
+ * 
+ */
+
+// Route pour AJOUTER commentaire à un bar
+router.post(config.rootAPI + '/bar/add-comment', checkingAuth, async (req, res) => {
+    try {
+        const { barID, comment } = req.body;
+        const userID = req.user._id; // id de l'utilisateur est retrouvé ici grâce au middleware (cad: checkingAuth)
+
+        if (!barID || !userID || !comment) {
+            throw "Informations manquantes pour ajouter votre commentaire! Merci d'écrire un commentaire";
+        } 
+        const bar = await Bar.findById({ _id: barID });
+        bar.commentaire.push({ comment, 'author':userID });
+        bar.save();
+        res.status(201).send({ success: "OK" });
+        
+    } catch (err) {
+        res.status(422).send({ error: "Une erreur s'est produite pour ajouter votre commentaire, Merci d'écrire un commentaire" });
+    }
+});
+
+// Route pour LISTER les commentaires dun bar donné.
+router.get(config.rootAPI + '/bar/all-comment/:barID', checkingAuth, async (req, res) => {
+    try {
+        const barID = req.params.barID;
+        const userID = req.user._id; // id de l'utilisateur est retrouvé ici grâce au middleware (cad: checkingAuth).
+        
+        if (!userID || !barID) {
+            throw '"Informations manquantes, merci de vous authentifier !';
+        }
+
+        /*
+        Explication: On trouve un bar par ID, ensuite on utilise populate à l'aide "ref "(cf Model User) pour afficher toutes les informations du l'utilisateur.
+        *
+        */
+
+        Bar.findById({ _id: barID })
+            .populate({
+                path: 'commentaire.author',
+                select: 'username image -_id' //-_id on soustrait les informations inutiles.
+            })
+            .exec(function (err, data) {
+                if (err) throw handleError(err);
+                if (data) {
+                    const userObject = data.toObject()
+                    const result = userObject.commentaire;
+
+                    const resultat = [];
+
+                    for (let i = 0; i < result.length; i++) {
+                        var object_tmp = {};
+                        
+                        let childArray_id = result[i]._id;
+                        let childArray_comment = result[i].comment;
+                        let childArray_author = result[i].author.username;
+                        let = childArray_image = result[i].author.image;        
+
+                        //Build object with : _id, comment, author and image.
+                        object_tmp["_id"] = childArray_id;
+                        object_tmp["comment"] = childArray_comment;
+                        object_tmp["author"] = childArray_author;
+                        object_tmp["image"] = childArray_image;
+
+                        resultat.push(object_tmp);
+                    }
+                    res.status(200).json(resultat);
+                }
+            }); 
+
+    } catch (err) {
+        res.status(422).send({ error: "Une erreur s'est produite pour lister les commentaires" });
+    }
+});
 
 module.exports = router;

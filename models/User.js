@@ -37,6 +37,9 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    image: {
+        type: Buffer,
+    },
     favorisBar: [FavoriteBarSchena]
 },{
     timestamps: true

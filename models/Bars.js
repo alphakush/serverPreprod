@@ -1,10 +1,6 @@
 const mongoose = require('mongoose');
 
 const commentBarSchena = new mongoose.Schema({
-    barid: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Bar'
-    },
     comment: {
         type: String,
         trim: true
@@ -16,6 +12,18 @@ const commentBarSchena = new mongoose.Schema({
 }, {
     timestamps: true
 });
+
+/*
+//Suppression du mot de passe de la response.
+commentBarSchena.methods.toJSON = function () {
+    const user = this;
+    const userObject = user.toObject()
+
+    delete userObject.password
+
+    return userObject
+}
+*/
 
 const barSchema = new mongoose.Schema({
     name: {
@@ -71,7 +79,7 @@ const barSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         required: false,
     },
-    comment: [commentBarSchena]
+    commentaire: [commentBarSchena]
 },{
     timestamps: true
 });
