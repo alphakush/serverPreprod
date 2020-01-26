@@ -3,15 +3,12 @@ const express = require('express');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const sharp = require('sharp');
-var path = require('path');
 const config = require('../config');
 const User = mongoose.model('User');
 const router = express.Router();
 const { welcomeEmail } = require('../emails/account');
 const ArrayToString = require('./base64ArrayBuffer');
 
-
-const fs = require('fs');
 
 // Route pour CREER un compte sur l'application.
 router.post(config.rootAPI+'/signup', async (req,res) => {
@@ -20,7 +17,7 @@ router.post(config.rootAPI+'/signup', async (req,res) => {
 
         // NOTE : process.cwd() : Note the absolute path of where you started the Node.js process !
         const defaultImage = process.cwd()+'/images/avatar.png';
-        const imageCropDefault = await sharp(defaultImage).resize(820, 360, { fit: sharp.fit.inside, withoutEnlargement: true }).toBuffer();
+        const imageCropDefault = await sharp(defaultImage).resize(820, 360, { fit: sharp.fit.inside, withoutEnlargement: true }).png().toBuffer();
         
         const {username , email, password } = req.body;
         const user = new User({username, email, password, 'image': imageCropDefault});

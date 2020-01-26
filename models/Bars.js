@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+var validator = require('validator');
 
 const commentBarSchena = new mongoose.Schema({
     comment: {
@@ -12,18 +13,6 @@ const commentBarSchena = new mongoose.Schema({
 }, {
     timestamps: true
 });
-
-/*
-//Suppression du mot de passe de la response.
-commentBarSchena.methods.toJSON = function () {
-    const user = this;
-    const userObject = user.toObject()
-
-    delete userObject.password
-
-    return userObject
-}
-*/
 
 const barSchema = new mongoose.Schema({
     name: {
@@ -61,16 +50,12 @@ const barSchema = new mongoose.Schema({
     },
     note:{
         type: Number,
-        validate(value){
-            if(value < 0 ){
-                //TODO ajouter étoile 1,2,..5 numérateur[note]/dénominateur[nb de personnes qui vote + 1]
-                throw new Error('La note doit être positive');
-            }
-        }
+        min: 0,
+        max: 5
     },
     image: {
-        type: Buffer,
-        required: true
+        type: String,
+        required: true,
     },
     product:{
         Array
@@ -79,7 +64,27 @@ const barSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         required: false,
     },
-    commentaire: [commentBarSchena]
+    commentaire: [commentBarSchena],
+    counterLike:{
+        type: Number,
+        validate(value){
+            if(value < 0 ){
+                //TODO ajouter LIKE
+                throw new Error('Le nombre de LIKE doit être positive');
+            }
+        },
+        default: 0
+    },
+    counterComment:{
+        type: Number,
+        validate(value){
+            if(value < 0 ){
+                //TODO ajouter LIKE
+                throw new Error('Le nombre de LIKE doit être positive');
+            }
+        },
+        default: 0
+    },
 },{
     timestamps: true
 });

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
-var validator = require('validator');
+const validator = require('validator');
 const jwt = require('jsonwebtoken');
 
 const FavoriteBarSchena = new mongoose.Schema({
