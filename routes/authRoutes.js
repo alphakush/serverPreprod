@@ -18,7 +18,7 @@ router.post(config.rootAPI+'/signup', async (req,res) => {
         // NOTE : process.cwd() : Note the absolute path of where you started the Node.js process !
         const defaultImage = process.cwd()+'/images/avatar.png';
         const imageCropDefault = await sharp(defaultImage).resize(820, 360, { fit: sharp.fit.inside, withoutEnlargement: true }).png().toBuffer();
-        
+
         const {username , email, password } = req.body;
         const user = new User({username, email, password, 'image': imageCropDefault});
         await user.save();

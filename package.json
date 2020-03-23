@@ -5,7 +5,11 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "env-cmd -f ./config/dev.env nodemon index.js",
+    "test": "env-cmd -f ./config/test.env jest --watch --runInBand --detectOpenHandles"
+  },
+  "jest": {
+    "testEnvironment": "node"
   },
   "keywords": [],
   "author": "",
@@ -14,7 +18,7 @@
   "dependencies": {
     "@sendgrid/mail": "^6.4.0",
     "bcrypt": "^3.0.6",
-    "env-cmd": "^10.0.1",
+    "cors": "^2.8.5",
     "express": "^4.17.1",
     "graceful-fs": "^4.2.3",
     "jsonwebtoken": "^8.5.1",
@@ -27,6 +31,9 @@
     "validator": "^12.1.0"
   },
   "devDependencies": {
-    "nodemon": "^1.19.3"
+    "env-cmd": "^10.0.1",
+    "jest": "^25.1.0",
+    "nodemon": "^1.19.3",
+    "supertest": "^4.0.2"
   }
 }

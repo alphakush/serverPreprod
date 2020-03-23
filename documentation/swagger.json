@@ -1,0 +1,657 @@
+{
+  "info": {
+    "title": "Baraka API documentation",
+    "version": "1.0.0",
+    "license": {
+      "name": "Sous-traitant Baraka"
+    },
+    "contact": {
+      "email": "abdourahime.mohamadi-halidi@epitech.eu"
+    },
+    "description": "API REST pour gérer l'application Baraka"
+  },
+  "basePath": "/api/v1",
+    "host": "https://baraka-api.herokuapp.com/",
+    "tags": [
+      {
+        "name": "Connexion",
+        "description": "Routes aidant l'utilisateur à créer ou se connecter à son compte."
+      },
+      {
+        "name": "Bars",
+        "description": "Routes permettant d'afficher, modifier,administrer un ou des bar(s)."
+      },
+      {
+        "name": "Contact",
+        "description": "Routes pour l'envoi de different e-mail."
+      }
+    ],
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "Page principale ",
+        "description" : "Retourne un page HTML de bienvenue.",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK retourne un ou des bars.",
+            "examples": {
+              "application/json": {
+                "success": "OK"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/signup/{username, email, password}": {
+      "post": {
+        "tags": ["Connexion"],
+        "summary": "Créer un compte.",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [{
+          "name": "username",
+          "in": "body",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "description": "username",
+            "example": "Baraka_user"
+          }
+        },
+          {
+            "name": "e-mail",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "description": "e-mail",
+              "type": "string",
+              "example": "baraka_user01@gmail.com"
+            }
+          },
+          {
+            "name": "password",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "description": "password",
+              "type": "string",
+              "example": "barakaisfun"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK "
+          },
+          "422":
+          {"description": "Error",
+            "examples": {
+              "application/json": {
+                "Error" : "Cette adresse e-mail est dèja associée à un compte"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/signin/{email, password}": {
+      "post": {
+        "tags": ["Connexion"],
+        "summary": "Se connecter à son compte.",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "e-mail",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "description": "e-mail",
+              "type": "string",
+              "example": "baraka_user@example.com"
+            }
+          },
+          {
+            "name": "password",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "description": "password",
+              "type": "string",
+              "example": "barakaisfun"
+            }
+          }],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "422": {
+            "description": "Error ",
+            "examples": {
+              "application/json": {
+                "error" : "Le mot de passe ou l'e-mail est invalide"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/allbars": {
+      "get": {
+        "tags": ["Bars"],
+        "summary": "Récupérer les informations de tous les bars.",
+        "consumes": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "examples": {
+              "application/json": {
+                "id": "5e16f77ce163d4001717d4aa",
+                "name" : "Chez Tonton",
+                "description": "Le QG des étudiants de Toulouse. Il faut dire qu'avec des pressions demi à 2,30 €, des pintes à 4 €, sans oublier le fameux pastis à 2,50 €, les étudiants sont vite conquis",
+                "coordgps": "16 pl St Pierre 31000 Toulouse",
+                "averageNotation": 4.5,
+                "trends": [
+                  "trend","cool","stylié"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bar/{barname}": {
+      "post": {
+        "tags": ["Bars"],
+        "summary": "/bar/{barname}",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [{
+            "name": "barname",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "description": "On renseigne le nom du bar rechercher",
+              "type": "string",
+              "example": "Wayne's bar"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK return bar(s)",
+            "examples": {
+              "application/json": {
+                "id": "5e16f814e163d4001717d4ab",
+                "name" : "Wayne's Bar",
+                "description": "Dans une ambiance 'Retro American' est le décor pour boire une bière dans la 'french riviera",
+                "coordgps": "15 Rue de la Préfecture, 06300 Nice",
+                "averageNotation": 4.5,
+                "trends": [
+                  "trend","cool","stylié"
+                ]
+              }
+            }
+          },
+          "422":{
+            "description": "Error.",
+            "examples": {
+              "application/json": {
+                "Error" : "Une erreur s'est produite pour trouver votre bar."
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bar/create-bar/{name, description, tags, phone, address, products, image}": {
+      "post": {
+        "tags": ["Bars"],
+        "summary": "Créer un bar.",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "description": "On renseigne le nom du bar",
+              "type": "string",
+              "example": "Chez Tonton"
+            }
+          },
+          {
+            "name": "description",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "description": "Ajouter la description du bar",
+              "type": "string",
+              "example": "Le QG des étudiants de Toulouse. Il faut dire qu'avec des pressions demi à 2,30 €, des pintes à 4 €, sans oublier le fameux pastis à 2,50 €, les étudiants sont vite conquis"
+            }
+          },
+          {
+            "name": "tags",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "description": "On renseigne les tags caractérisant le bar.",
+              "type": "string",
+              "example": "[Etudiant,Cool, Pas cher]"
+            }
+          },
+          {
+            "name": "phone",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "description": "On renseigne le numéro de téléphone.",
+              "type": "string",
+              "example": "04 78 42 59 56"
+            }
+          },
+          {
+            "name": "phone",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "description": "On renseigne les tags caractérisant le bar.",
+              "type": "string",
+              "example": "[Etudiant,Cool, Pas cher]"
+            }
+          },
+          {
+            "name": "address",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "description": "On renseigne l'addrese du bar.",
+              "type": "string",
+              "example": "16 pl St Pierre 31000 Toulouse"
+            }
+          },
+          {
+            "name": "products",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "description": "On renseigne l'addrese du bar.",
+              "type": "string",
+              "example": "[Champagne, bière, Elfe]"
+            }
+          },
+          {
+            "name": "image",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "description": "On renseigne l'addrese du bar.",
+              "type": "string",
+              "example": "Upload an image"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK.",
+            "examples": {
+              "application/json": {
+                "id": "5e16f77ce163d4001717d4aa",
+                "name" : "Chez Tonton",
+                "description": "Le QG des étudiants de Toulouse. Il faut dire qu'avec des pressions demi à 2,30 €, des pintes à 4 €, sans oublier le fameux pastis à 2,50 €, les étudiants sont vite conquis",
+                "coordgps": "16 pl St Pierre 31000 Toulouse",
+                "averageNotation": 4.5,
+                "trends": [
+                  "trend","cool","stylié"
+                ]
+              }
+            }
+          },
+          "422":{
+            "description": "Error.",
+            "examples": {
+              "application/json": {
+                "Error" : "Merci de remplir  toutes les champs pour créer un bar à savoir :nom, description, tags, addresse, produits et images."
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bar/add-favorite/{barID}": {
+      "post": {
+        "tags": ["Bars"],
+        "summary": "Ajouter un bar aux favoris de l'utilisateur",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "barID",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "description": "On passe l'ID du bar.",
+              "type": "string",
+              "example": "5e16f8c2e163d4001717d4ad"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK."
+          },
+          "422":{
+            "description": "Error",
+            "examples": {
+              "application/json": {
+                "Error" : "Une erreur s'est produite pour ajouter ce bar à vos favoris."
+              }
+            }
+          }
+        }
+      }
+    },
+    "/delete-favorite/{id}": {
+      "delete": {
+        "tags": ["Bars"],
+        "description": "L'utilisateur doit être connecté pour utiliser cette route",
+        "summary": "Supprimer un bar de ses favoris.",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "barID",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "description": "On renseigne le nom du bar",
+              "type": "string",
+              "example": "5e16f77ce163d4001717d4aa"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "retourne OK",
+            "examples": {
+              "application/json": {
+                "success": "OK"
+              }
+            }
+          },
+          "422":{
+            "description": "Error",
+            "examples": {
+              "application/json": {
+                "Error" : "Ce bar n'existe pas dans vos favoris."
+              }
+            }
+          },
+          "422-bis":{
+            "description": "Error",
+            "examples": {
+              "application/json": {
+                "Error" : "Une erreur s'est produite pour supprimer ce bar de vos favoris."
+              }
+            }
+          }
+        }
+      }
+    },
+    "/my-favorite-bar": {
+      "get": {
+        "tags": ["Bars"],
+        "description": "L'utilisateur doit être connecté pour utiliser cette route",
+        "summary": "Liste les bars favoris de l'utilisateur.",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+        ],
+        "responses": {
+          "200": {
+            "description": "OK retourne un ou des bars.",
+            "examples": {
+              "application/json": {
+                "id": "5e16f77ce163d4001717d4aa",
+                "name" : "Chez Tonton",
+                "description": "Le QG des étudiants de Toulouse. Il faut dire qu'avec des pressions demi à 2,30 €, des pintes à 4 €, sans oublier le fameux pastis à 2,50 €, les étudiants sont vite conquis",
+                "coordgps": "16 pl St Pierre 31000 Toulouse",
+                "averageNotation": 4.5,
+                "trends": [
+                  "trend","cool","stylié"
+                ]
+              }
+            }
+          },
+          "422":{
+            "description": "Error",
+            "examples": {
+              "application/json": {
+                "Error" : "Une Error s'est produite pour lister vos favoris."
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bar/add-comment/{barID, userNote, comment}": {
+      "post": {
+        "tags": ["Bars"],
+        "description": "L'utilisateur doit être connecté pour utiliser cette route",
+        "summary": "Ajouter un commentaire à un bar.",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "barID",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "description": "On renseigne le nom du bar",
+              "type": "string",
+              "example": "5e16f77ce163d4001717d4aa"
+            }
+          },
+          {
+            "name": "userNote",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "description": "On renseigne le nom du bar",
+              "type": "int",
+              "example": "4"
+            }
+          },
+          {
+            "name": "comment",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "description": "On renseigne le nom du bar",
+              "type": "string",
+              "example": "Super bar."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK.",
+            "examples": {
+              "application/json": {
+                "success": "OK"
+              }
+            }
+          },
+          "422":{
+            "description": "Error",
+            "examples": {
+              "application/json": {
+                "Error" : "Une Error s'est produite pour ajouter votre commentaire."
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bar/all-comment/{barID}": {
+      "get": {
+        "tags": ["Bars"],
+        "description": "L'utilisateur doit être connecté pour utiliser cette route",
+        "summary": "Lister tous les commentaires.",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "barID",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "description": "On renseigne l'ID du bar qu'on souhaite lister les commentaires.",
+              "type": "string",
+              "example": "5e16f77ce163d4001717d4aa"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK retourne un ou plusieurs commentaires.",
+            "examples": {
+              "application/json": {
+                "id": "5e16f77ce163d4001717d4aa",
+                "comment" : "Une soirée de ouf !",
+                "author": "toto",
+                "image": "iVBORw0KGgoAAAANSUhEUgAAANcAAADXCAIAAAAGH1PiAAAACXBIWXMAAAsSAAALEgHS3X78AAAgAElEQVR42u2d91dUXbrn..."
+              }
+
+            }
+          },
+          "422":{
+            "description": "Error",
+            "examples": {
+              "application/json": {
+                "Error" : "Une Error s'est produite pour lister les commentaires."
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bar/add-note/{barID, userNote}": {
+      "patch": {
+        "tags": ["Bars"],
+        "description": "L'utilisateur doit être connecté pour utiliser cette route",
+        "summary": "Ajouter une note à un bar.",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "barID",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "description": "On renseigne l'ID du bar qu'on souhaite lister les commentaires.",
+              "type": "string",
+              "example": "5e16f77ce163d4001717d4aa"
+            }
+          },
+          {
+            "name": "userNote",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "description": "On renseigne l'ID du bar qu'on souhaite lister les commentaires.",
+              "type": "int",
+              "example": "4"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "OK.",
+            "examples": {
+              "application/json": {
+                "success": "OK"
+              }
+            }
+          },
+          "422":
+          {"description": "Error",
+            "examples": {
+              "application/json": {
+                "Error" : "Une Error s'est pour ajouter votre note."
+              }
+            }
+          }
+        }
+      }
+    },
+    "welcomeEmail": {
+      "get": {
+        "tags": ["Contact"],
+        "description": "Envoie d'un e-mail de bienvenue à l'utilisateur.",
+        "summary": "Envoie d' e-mail de bienvenue quand l'utilisateur",
+        "consumes": [
+          "application/json"
+        ],
+        "securitySchemes" :{
+          "bearerAuth": {
+            "type": "http"
+          }
+        },
+        "parameters": [
+        ],
+        "responses": {
+          "200": {
+            "description": "OK.",
+            "examples": {
+              "application/json": {
+                "message" : "Bienvenue sur l'application Baraka, Toto. ne tardez pas commencer par ajouter votre 1èr bar dans vos favoris!"
+              }
+            }
+          }
+        }
+      }
+    },
+    "contactEmail": {
+      "get": {
+        "tags": ["Contact"],
+        "description": "Permet à l'utilisateur de contacter l'équipe Baraka.",
+        "summary": "Contacter l'équipe Baraka.",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+        ],
+        "responses": {
+          "200": {
+            "description": "OK.",
+            "examples": {
+              "application/json": {
+                "message" : "Je voudrais rejoindre l'équipe Baraka."
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "swagger": "2.0"
+}

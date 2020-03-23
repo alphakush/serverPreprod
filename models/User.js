@@ -35,7 +35,14 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true
+        required: true,
+        minLength: 7,
+        trim: true,
+        validate(value) {
+            if(value.toLowerCase().includes('password')) {
+                throw new Error('Merci de ne pas utiliser "password" dans votre mot de passe!')
+            }
+        }
     },
     image: {
         type: Buffer,
@@ -102,4 +109,7 @@ userSchema.methods.comparePassword = function (candidatePassword) {
     });
 };
 
-mongoose.model('User', userSchema);
+const User = mongoose.model('User', userSchema);
+module.exports = User;
+
+//mongoose.model('User', userSchema);

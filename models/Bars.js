@@ -9,6 +9,9 @@ const commentBarSchena = new mongoose.Schema({
     author: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
+    },
+    userNote: {
+      type: Number
     }
 }, {
     timestamps: true
@@ -69,7 +72,6 @@ const barSchema = new mongoose.Schema({
         type: Number,
         validate(value){
             if(value < 0 ){
-                //TODO ajouter LIKE
                 throw new Error('Le nombre de LIKE doit être positive');
             }
         },
@@ -89,4 +91,7 @@ const barSchema = new mongoose.Schema({
     timestamps: true
 });
 
-mongoose.model('Bar',barSchema);
+const Bar = mongoose.model('Bar', barSchema);
+module.exports = Bar;
+
+//mongoose.model('Bar',barSchema);

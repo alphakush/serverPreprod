@@ -22,7 +22,6 @@ var options = {
 var geocoder = NodeGeocoder(options);
 
 // Route pour OBTENIR TOUS les bars disponibles
-
 //
 //allbars?limit=10&skip=0,10,20.... = limit : parseInt(req.query.limit)
 //allbars?sortBy=createdAt:desc
@@ -45,12 +44,17 @@ router.get(config.rootAPI + '/allbars', async (req, res) => {
 
 //Route pour obtenur un bar par nom. Example barname: wallace
 router.get(config.rootAPI + '/bar/:barname', async (req, res) => {
+  try {
     const barName = req.params.barname;
     const barRegex = new RegExp("^.*" + barName + '.*', 'i');
     const barFound = await Bar.find({
         name: barRegex
     });
     res.send(barFound);
+  } catch (e) {
+    res.status(422).send({ error: "Une erreur s'est produite pour trouver votre bar." });
+  }
+
 });
 
 // Les conditions pour  uploader une image
@@ -97,9 +101,8 @@ router.post(config.rootAPI + '/bar/create-bar', upload.single('upload-bar'), asy
             .catch(function (err) {
                 res.status(422).send(err)
             });
-
     } catch (err) {
-        res.status(422).send({ error: 'Merci de remplir  toutes les champs pour créer un bar à savoir :nom, description, tags, addresse, produits et images' })
+        res.status(422).send({ error: 'Merci de remplir  toutes les champs pour créer un bar à savoir :nom, description, tags, addresse, produits et images' });
     }
 }, (error, req, res, next) => {
     res.status(422).send({ error: error.message })
@@ -108,11 +111,11 @@ router.post(config.rootAPI + '/bar/create-bar', upload.single('upload-bar'), asy
 //Route pour nous contacter
 router.post(config.rootAPI + '/contact-us', (req, res) => {
     try {
-        const { email, message } = req.body;
-        if (!email || !message) {
-            throw 'Merci de compléter tous les champs (e-mail, password)';
+        const { email, objet, message } = req.body;
+        if (!email || !message || !objet) {
+            return res.status(422).send({ error: "Informations manquantes. Merci de bien renseigner un email, un message et un object." })
         }
-        contactEmail(email, message)
+        contactEmail(email, objet, message)
         res.status(200).send({ success: "OK" });
     } catch (err) {
         res.status(422).send({ error: "Votre message n'a pas pu être transmis." })
@@ -195,7 +198,7 @@ router.get(config.rootAPI + '/my-favorite-bar', checkingAuth, async (req, res) =
                 }
             });
     } catch (err) {
-        res.status(422).send({ error: "Une erreur s'est produite pour ajouter ce bar à vos favoris" });
+        res.status(422).send({ error: "Une erreur s'est produite pour lister vos favoris." });
     }
 });
 
@@ -206,18 +209,29 @@ router.delete(config.rootAPI + '/delete-favorite/:id', checkingAuth, async (req,
         const userID = req.user._id; // id de l'utilisateur est retrouvé ici grâce au middleware (cad: checkingAuth)
 
         if (!id || !userID) {
-            throw "Informations manquantes pour supprimer ce bar à vos favoris !";
+            return res.status(422).send({ error: "Informations manquantes pour supprimer ce bar de vos favoirs." });
         }
 
         User.findOne({'favorisBar.barID': id}, {'favorisBar.$': 1}, async (err, data) =>{
             try {
-                const userDeleteID = data.favorisBar[0]._id;
-                User.updateOne({ _id: userID }, { "$pull": { "favorisBar": { "_id": userDeleteID } }}, { safe: true, multi:true }, function(err, obj) {
-                });
+                if(data) {
+                  const bar = await Bar.findById({_id: id });
 
-                res.status(200).send(userDeleteID);
+                  const currentCounterLike = bar.counterLike - 1
+
+                  const userDeleteID = data.favorisBar[0]._id;
+                  User.updateOne({ _id: userID }, { "$pull": { "favorisBar": { "_id": userDeleteID } }}, { safe: true, multi:true }, function(err, obj) {
+                  });
+
+                  Bar.findByIdAndUpdate(id, { counterLike: currentCounterLike }).then(() => {
+                    bar.save();
+                    res.status(201).send({ success: "OK" });
+                  });
+                }else {
+                  return res.status(422).send({ error: "Ce bar n'existe pas dans vos favoris." });
+                }
         } catch (error) {
-                res.status(422).send({ error: "Une erreur s'est produite !" });
+                res.status(422).send({ error: "Une erreur s'est produite pour supprimer ce bar de vos favoris." });
             }
         });
 
@@ -233,19 +247,23 @@ router.delete(config.rootAPI + '/delete-favorite/:id', checkingAuth, async (req,
 // Route pour AJOUTER commentaire à un bar
 router.post(config.rootAPI + '/bar/add-comment', checkingAuth, async (req, res) => {
     try {
-        const { barID, comment } = req.body;
+        const { userNote, comment, barID } = req.body;
         const userID = req.user._id; // id de l'utilisateur est retrouvé ici grâce au middleware (cad: checkingAuth)
 
-        if (!barID || !userID || !comment) {
-            console.log("ici eroor");
-            throw "Informations manquantes pour ajouter votre commentaire! Merci d'écrire un commentaire";
+        if (!barID || !userID || !comment || !userNote) {
+            throw "Une erreur s'est produite pour ajouter votre commentaire.";
         }
 
-        //add the new  commentaire.
-        const bar = await Bar.findById({ _id: barID });
-        bar.commentaire.push({ comment, 'author':userID });
+        if(userNote < 0 || userNote > 5) {
+          throw "Informations manquantes pour ajouter votre note.";
+        }
 
-        // add +1 to currentCounterComment
+        //retrouve le bar et ajoute un commentaire.
+        const bar = await Bar.findById({ _id: barID });
+
+        bar.commentaire.push({ comment, 'author':userID ,userNote });
+
+        // Ajoute +1 au compteur currentCounterComment
         currentCounterComment = bar.counterComment + 1;
         Bar.findByIdAndUpdate(barID, { counterComment: currentCounterComment }).then( () => {
           bar.save();
@@ -253,8 +271,7 @@ router.post(config.rootAPI + '/bar/add-comment', checkingAuth, async (req, res) 
         });
 
     } catch (err) {
-        //res.status(422).send({ error: "Une erreur s'est produite pour ajouter votre commentaire, Merci d'écrire un commentaire" });
-        res.status(422).send(err)
+        res.status(422).send({ error: "Une erreur s'est produite pour ajouter votre commentaire." });
     }
 });
 
@@ -293,7 +310,7 @@ router.get(config.rootAPI + '/bar/all-comment/:barID', checkingAuth, async (req,
                         let childArray_id = result[i]._id;
                         let childArray_comment = result[i].comment;
                         let childArray_author = result[i].author.username;
-                        let = childArray_image = result[i].author.image;
+                        let childArray_image = result[i].author.image;
 
                         //Build object with : _id, comment, author and image.
                         object_tmp["_id"] = childArray_id;
@@ -342,36 +359,30 @@ router.patch(config.rootAPI + '/bar/add-note', checkingAuth, async (req, res) =>
     }
 });
 
-// Route pour COMPTER les commentaires d'un bar.
+// Route pour CALCULER LA MOYENNE d'un bar.
 
-
-router.patch(config.rootAPI + '/updateCounterComment/:bar', checkingAuth, async (req, res) => {
-    try {
-      Bar.aggregate([
-    { $match: { /* Query can go here, if you want to filter results. */ } },
-    { $project: { commentaire: 1 } } /* select the tokens field as something we want to "send" to the next command in the chain */,
-    { $unwind: '$commentaire' } /* this converts arrays into unique documents for counting */
-  , { $group: { /* execute 'grouping' */
-          _id: { commentaire: '$commentaire' } /* using the 'token' value as the _id */
-        , count: { $sum: 1 } /* create a sum value */
-      }
-    }
-  ], function(err, topTopics) {
-      countTopics = topTopics.length;
-      res.status(200).json(countTopics);
-    });
-
-      /*
-      const myvalue = await Bar.countDocuments({  }, function (err, count) {
-        console.log('there are %d jungle adventures', count);
-        res.status(200).json(count);
-      });
-      */
-
-    } catch (err) {
-        res.status(422).send({ error: "Une erreur s'est pour retourner le nombre de commentaires" });
-    }
-});
+// //**
+// router.patch(config.rootAPI + '/updateCounterComment/:bar', checkingAuth, async (req, res) => {
+//     try {
+//       Bar.aggregate([
+//     { $match: { /* Query can go here, if you want to filter results. */ } },
+//     { $project: { commentaire: 1 } } /* select the tokens field as something we want to "send" to the next command in the chain */,
+//     { $unwind: '$commentaire' } /* this converts arrays into unique documents for counting */
+//   , { $group: { /* execute 'grouping' */
+//           _id: { commentaire: '$commentaire' } /* using the 'token' value as the _id */
+//         , count: { $sum: 1 } /* create a sum value */
+//       }
+//     }
+//   ], function(err, topTopics) {
+//       countTopics = topTopics.length;
+//       res.status(200).json(countTopics);
+//     });
+//
+//
+//     } catch (err) {
+//         res.status(422).send({ error: "Une erreur s'est pour retourner le nombre de commentaires" });
+//     }
+// });
 
 
 module.exports = router;
