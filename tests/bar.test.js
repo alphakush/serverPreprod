@@ -8,7 +8,7 @@ const userBaraka = {
     email: 'baraka-test@example.com',
     password: 'barka!test'
 }
-// TODO: FIRE POUR LES BARS !
+// TODO: FAIRE POUR LES BARS !
 test("bar test" ,async() =>{
   await request(app).post(config.rootAPI+'/signup').send({
     username: 'jest',

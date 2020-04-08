@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const validator = require('validator');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 
 const FavoriteBarSchena = new mongoose.Schema({
     barID: {
@@ -45,7 +46,15 @@ const userSchema = new mongoose.Schema({
         }
     },
     image: {
-        type: Buffer,
+        type: Buffer
+    },
+    resetPasswordToken: {
+        type: String,
+        required: false
+    },
+    resetPasswordExpires: {
+        type: Date,
+        required: false
     },
     favorisBar: [FavoriteBarSchena]
 },{
@@ -109,7 +118,11 @@ userSchema.methods.comparePassword = function (candidatePassword) {
     });
 };
 
+userSchema.methods.generatePasswordReset = function() {
+    const user = this;
+    user.resetPasswordToken = crypto.randomBytes(20).toString('hex');
+    user.resetPasswordExpires = Date.now() + 3600000; //expires in an hour
+};
+
 const User = mongoose.model('User', userSchema);
 module.exports = User;
-
-//mongoose.model('User', userSchema);

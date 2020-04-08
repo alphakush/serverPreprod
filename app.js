@@ -5,6 +5,8 @@ require('./models/Managers');
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const path = require('path');
+const config = require('./config');
 
 mongoose.set('useFindAndModify', false);
 
@@ -13,6 +15,8 @@ const barRoutes = require('./routes/barRoutes');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./documentation/swagger');
 const app = express();
+app.set('view engine', 'hbs');
+
 
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "http://localhost:3000");
@@ -20,11 +24,19 @@ app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Credentials", true);
     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
     res.header("Access-Control-Allow-Headers", 'Origin,X-Requested-With,Content-Type,Accept,Content-Type');
+    res.header("application/x-www-form-urlencoded");
     next();
 });
 
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+
+app.set('views', path.join(__dirname,'/documentation/views'));  
+
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+const publicDirectoryPath = path.join(__dirname+'../documentation/views');
+app.use(express.static(publicDirectoryPath));
 
 app.use(authRoutes);
 app.use(barRoutes);
@@ -36,22 +48,20 @@ mongoose.connect(process.env.MONGODB_URL,{
 });
 
 mongoose.connection.on("connected", () => {
-    console.log("Connected");
+    
 });
 
 mongoose.connection.on("error", (err) => {
-    console.log("Eript.jsror connectiong to mongo", err);
+    console.log("Error connectiong to mongo", err);
 });
 
-app.get('/',(req,res) => {
-    res.sendFile(__dirname +'/documentation/welcome.html');
+app.get('',(req,res) => {
+    res.render('index', {
+        environnement: "BARAKA API Pré Production",
+        numberVersion: "2",
+        currentYear: new Date().getFullYear() 
+
     });
-
-app.get('/restpassword',(req,res) => {
-    res.sendFile(__dirname +'/documentation/restpassword.html');
-});
-app.get('/script.js',(req,res) => {
-    res.sendFile(__dirname +'/documentation/script.js');
 });
 
 module.exports = app;

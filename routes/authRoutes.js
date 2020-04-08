@@ -6,8 +6,9 @@ const sharp = require('sharp');
 const config = require('../config');
 const User = mongoose.model('User');
 const router = express.Router();
-const { welcomeEmail } = require('../emails/account');
+const { welcomeEmail, restPassword, confirmRestPassword } = require('../emails/account');
 const ArrayToString = require('./base64ArrayBuffer');
+const path = require('path');
 
 
 // Route pour CREER un compte sur l'application.
@@ -49,6 +50,89 @@ router.post(config.rootAPI+'/signin', async (req,res) => {
     } catch (err) {
         return res.status(422).send({error: "Le mot de passe ou l'e-mail est invalide"});
     }
+});
+
+// Etape 1 : RE INITILIASER son mot de passe. Envoie formulaire avec SENDGRID.
+router.post(config.rootAPI+'/rest-password', async (req,res) => {
+    const { email } = req.body;
+    if (!email ) {
+        return res.status(422).send({ error: "Merci d'inquer une adresse email." });
+    }
+    const user = await User.findOne({ email });
+    if (!user) {
+        return res.status(422).send({ error: "Aucune adresse e-mail est associé à cette e-mail." });
+    }
+    try {
+        const username =user.username;
+        const userEmail = user.email;
+
+        //generate tmpLink  for the user
+        user.generatePasswordReset();
+
+        const tmpLink = user.resetPasswordToken;
+        user.save();
+
+        //send e-mail to user 
+        restPassword(username, userEmail, tmpLink);
+        console.log(tmpLink);
+        res.status(200).send({ success: "OK" });
+    } catch (err) {
+        return res.status(422).send({error: "Le mot de passe ou l'e-mail est invalide"});
+    }
+});
+
+// Etape 2 : RE INITILIASER son mot de passe : envoie de la page 
+router.get(config.rootAPI+'/restpassword/:token', async (req,res) => {
+    const token = req.params.token;
+    User.findOne({resetPasswordToken : token, resetPasswordExpires : {$gt : Date.now()}})
+    .then(user => {
+        res.render('resetpassword', {
+            title: 'Réinitilisation de votre mot de passe',
+            token: token,
+            userId: user._id.toString(),
+            currentYear: new Date().getFullYear()
+        });
+    })
+    .catch(error =>{
+        res.render('404',{
+            title: '404...',
+            message: "404 ME VOICI"
+        })
+    })
+});
+
+// Etape 3 : RE INITILIASER son mot de passe : Mettre à jour le mot de passe dans la base de donnée.
+router.post(config.rootAPI+'/check-form/:token', async (req,res) => {
+    const newPassword1 = req.body.password1;
+    const newPassword2 = req.body.password2;
+    const userId = req.body.userId;
+    const token = req.body.token;
+
+    let resetUser;
+
+    User.findOne({resetPasswordToken : token, resetPasswordExpires : {$gt : Date.now()}, _id : userId })
+    .then(user => {
+        
+        resetUser = user;
+        // Change le mot de passe et set resetPasswordToken et resetPasswordExpires à UNDEFINED.
+        resetUser.password = newPassword1;
+        resetUser.resetPasswordToken = undefined;
+        resetUser.resetPasswordExpires = undefined;
+        return resetUser.save();
+    }).then(result => {
+        confirmRestPassword(resetUser.username, resetUser.email);
+        res.render('congratulation', {
+            title : 'Congratulation',
+            currentYear: new Date().getFullYear(),
+            name: resetUser.username,
+            subtitle: 'Félicitation'
+        });
+    })
+    .catch(error => {
+        res.render('404', {
+            title: '404 me voici ! '
+        })
+    }) 
 });
 
 module.exports = router;
