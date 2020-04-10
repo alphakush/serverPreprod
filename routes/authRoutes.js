@@ -22,6 +22,7 @@ router.post(config.rootAPI+'/signup', async (req,res) => {
 
         const {username , email, password } = req.body;
         const user = new User({username, email, password, 'image': imageCropDefault});
+        
         await user.save();
         welcomeEmail(user.email, user.username);
         const token = jwt.sign({userId: user._id}, process.env.JWT_SECRET);
@@ -74,7 +75,6 @@ router.post(config.rootAPI+'/rest-password', async (req,res) => {
 
         //send e-mail to user 
         restPassword(username, userEmail, tmpLink);
-        console.log(tmpLink);
         res.status(200).send({ success: "OK" });
     } catch (err) {
         return res.status(422).send({error: "Le mot de passe ou l'e-mail est invalide"});
@@ -130,7 +130,8 @@ router.post(config.rootAPI+'/check-form/:token', async (req,res) => {
     })
     .catch(error => {
         res.render('404', {
-            title: '404 me voici ! '
+            title: '404 me voici ! ',
+            currentYear: new Date().getFullYear()
         })
     }) 
 });

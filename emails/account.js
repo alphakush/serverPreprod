@@ -55,7 +55,7 @@ const confirmRestPassword = (name, email) => {
         subject: `Confirmation du changement de votre mot de passe.`,
         text: 
         `
-Bonjour ${name}, Votre mot de passe a été changé avec succès. Vous voilà de retour :)
+Bonjour ${name}, Votre mot de passe a été avec succès. Vous voilà de retour :)
 
 A bientôt sur l'application Baraka.
 `

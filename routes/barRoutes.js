@@ -6,7 +6,7 @@ const multer = require('multer');
 const checkingAuth = require("../middlewares/checkingAuth");
 const ArrayToString = require('./base64ArrayBuffer');
 const { contactEmail } = require('../emails/account');
-var NodeGeocoder = require('node-geocoder');
+const NodeGeocoder = require('node-geocoder');
 
 const Bar = mongoose.model('Bar');
 const User = mongoose.model('User');
@@ -60,8 +60,8 @@ router.get(config.rootAPI + '/bar/:barname', async (req, res) => {
 // Les conditions pour  uploader une image
 const upload = multer({
     limits: {
-        //Max of file 1Mo= 1000000 bytes.
-        fileSize: 1000000
+        //Max of file 5Mo= 5000000 bytes.
+        fileSize: 5000000
     },
     fileFilter(req, file, cb) {
         if (!file.originalname.match(/\.(png|jpg|jpeg)$/)) {
@@ -75,7 +75,7 @@ const upload = multer({
 router.post(config.rootAPI + '/bar/create-bar', upload.single('upload-bar'), async (req, res) => {
     try {
         const { name, description, tags, address, note, products, phone } = req.body;
-
+        
         if (!name || !description || !tags || !address || !note || !products || !phone) {
             throw 'Merci de remplir toutes les champs pour créer un bar à savoir :nom, description, tags, téléphone,  addresse, produits et images';
         }
@@ -99,13 +99,13 @@ router.post(config.rootAPI + '/bar/create-bar', upload.single('upload-bar'), asy
                 res.status(201).send({ success: "OK" });
             })
             .catch(function (err) {
-                res.status(422).send(err)
+                res.status(422).send({erreur : "Une erreur est survenu pour l'ajout de votre bar."})
             });
     } catch (err) {
         res.status(422).send({ error: 'Merci de remplir  toutes les champs pour créer un bar à savoir :nom, description, tags, addresse, produits et images' });
     }
 }, (error, req, res, next) => {
-    res.status(422).send({ error: error.message })
+    res.status(422).send({ error: "Une erreur est survenu pour l'ajout de votre bar." })
 });
 
 //Route pour nous contacter
