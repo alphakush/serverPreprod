@@ -88,4 +88,3 @@ test("Get all bar " ,async() =>{
   const reponse = await request(app).get(config.rootAPI+'/allbars').send({
   }).expect(200)
 })
-

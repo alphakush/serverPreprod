@@ -25,7 +25,7 @@ const contactEmail = (email,objet, message) => {
     })
 }
 
-const restPassword = (name, email, $tmpLink) => {
+const restPassword = (name, email, tmpLink, currentYear) => {
     sgMail.send({
         to: email,
         from: 'contact-baraka@gmail.com',
@@ -34,7 +34,7 @@ const restPassword = (name, email, $tmpLink) => {
         `<html> Bonjour ${name}, <br><br>
 
 Pour lancer le processus de réinitialisation du mot de passe de votre compte Baraka avec l'email : ${email},<br><br> cliquez sur le lien ci-dessous valable une heure : <br><br>
-https://baraka-api.herokuapp.com/api/v1/restpassword/${$tmpLink} <br><br>
+https://baraka-api.herokuapp.com/api/v1/restpassword/${tmpLink} <br><br>
 
 Si ce lien ne fonctionne pas, copiez l'URL, puis collez-la dans une nouvelle fenêtre de navigateur.<br><br>
         
@@ -44,7 +44,12 @@ Vos identifiants sont confidentiels. Ils vous permettent d'accéder aux sites et
 Bien cordialement,<br>
 Baraka<br><br>
 
-Ce message et les pièces jointes sont confidentiels et établis à l'attention exclusive de leur destinataire (aux adresses spécifiques auxquelles il a été adressé). Si vous n'êtes pas le destinataire de ce message, vous devez immédiatement en avertir l'expéditeur et supprimer ce message et les pièces jointes de votre système.</html>`
+Ce message et les pièces jointes sont confidentiels et établis à l'attention exclusive de leur destinataire (aux adresses spécifiques auxquelles il a été adressé). Si vous n'êtes pas le destinataire de ce message, vous devez immédiatement en avertir l'expéditeur et supprimer ce message et les pièces jointes de votre système.
+<footer>
+        <p>© ${currentYear} Baraka</p>
+    </footer>
+</html>`
+
 })
 }
 
@@ -55,7 +60,7 @@ const confirmRestPassword = (name, email) => {
         subject: `Confirmation du changement de votre mot de passe.`,
         text: 
         `
-Bonjour ${name}, Votre mot de passe a été avec succès. Vous voilà de retour :)
+Bonjour ${name}, Votre mot de passe a été modifié avec succès. Vous voilà de retour :)
 
 A bientôt sur l'application Baraka.
 `

@@ -54,6 +54,10 @@ router.post(config.rootAPI+'/signin', async (req,res) => {
 });
 
 // Etape 1 : RE INITILIASER son mot de passe. Envoie formulaire avec SENDGRID.
+
+//current year est utilisé pour les 3 prochaines routes, il permet d'avoir l'annéé en cours.
+currentYear = new Date().getFullYear();
+
 router.post(config.rootAPI+'/rest-password', async (req,res) => {
     const { email } = req.body;
     if (!email ) {
@@ -74,10 +78,10 @@ router.post(config.rootAPI+'/rest-password', async (req,res) => {
         user.save();
 
         //send e-mail to user 
-        restPassword(username, userEmail, tmpLink);
+        restPassword(username, userEmail, tmpLink, currentYear);
         res.status(200).send({ success: "OK" });
     } catch (err) {
-        return res.status(422).send({error: "Le mot de passe ou l'e-mail est invalide"});
+        return res.status(422).send({error: "Une erreur s'est produite pour re intiliser votre mot de passe."});
     }
 });
 
@@ -90,13 +94,14 @@ router.get(config.rootAPI+'/restpassword/:token', async (req,res) => {
             title: 'Réinitilisation de votre mot de passe',
             token: token,
             userId: user._id.toString(),
-            currentYear: new Date().getFullYear()
+            currentYear: currentYear
         });
     })
     .catch(error =>{
         res.render('404',{
             title: '404...',
-            message: "404 ME VOICI"
+            message: "404 ME VOICI",
+            currentYear: currentYear 
         })
     })
 });
@@ -120,10 +125,10 @@ router.post(config.rootAPI+'/check-form/:token', async (req,res) => {
         resetUser.resetPasswordExpires = undefined;
         return resetUser.save();
     }).then(result => {
-        confirmRestPassword(resetUser.username, resetUser.email);
+        confirmRestPassword(resetUser.username, resetUser.email,currentYear );
         res.render('congratulation', {
             title : 'Congratulation',
-            currentYear: new Date().getFullYear(),
+            currentYear: currentYear,
             name: resetUser.username,
             subtitle: 'Félicitation'
         });
@@ -131,7 +136,7 @@ router.post(config.rootAPI+'/check-form/:token', async (req,res) => {
     .catch(error => {
         res.render('404', {
             title: '404 me voici ! ',
-            currentYear: new Date().getFullYear()
+            currentYear: currentYear
         })
     }) 
 });

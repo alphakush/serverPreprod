@@ -1,7 +1,7 @@
 {
   "info": {
     "title": "Baraka API documentation",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "license": {
       "name": "Sous-traitant Baraka"
     },
@@ -11,7 +11,7 @@
     "description": "API REST pour gérer l'application Baraka"
   },
   "basePath": "/api/v1",
-    "host": "https://baraka-api.herokuapp.com/",
+    "host": "https://baraka-api.herokuapp.com",
     "tags": [
       {
         "name": "Connexion",
@@ -137,6 +137,94 @@
             "examples": {
               "application/json": {
                 "error" : "Le mot de passe ou l'e-mail est invalide"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rest-password/{email}": {
+      "post": {
+        "tags": ["Connexion"],
+        "summary": "Demander une re initilisation de son mot de passe.",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "e-mail",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "description": "e-mail",
+              "type": "string",
+              "example": "baraka_user@example.com"
+            }
+          }],
+        "responses": {
+          "200": {
+            "description": "Send un e-mail to user baraka_user@example.com"
+          },
+          "422": {
+            "description": "Error ",
+            "examples": {
+              "application/json": {
+                "error" : "Une erreur s'est produite pour re intiliser votre mot de passe."
+              }
+            }
+          }
+        }
+      }
+    },
+    "/restpassword/{token}": {
+      "get": {
+        "tags": ["Connexion"],
+        "summary": "Returne une page hbs",
+        "consumes": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "examples": {
+              "application/json": {
+                "page": "resetpassword.hbs"
+              }
+            }
+          },
+          "422": {
+            "description": "Error",
+            "examples": {
+              "application/json": {
+                "error" : "404.hbs une pagge d'erreur  "
+              }
+            }
+          }
+        }
+      }
+    },
+    "/check-form/{token}": {
+      "post": {
+        "tags": ["Connexion"],
+        "summary": "Confirmation du changement du mot de passe.",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "token": "d9911a305e63a75db04243d6c97cb2591ef31b93",
+            "in": "body",
+            "required": true
+          }],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "422": {
+            "description": "Error ",
+            "examples": {
+              "application/json": {
+                "error" : "U votre mot de passe."
               }
             }
           }
@@ -646,6 +734,60 @@
             "examples": {
               "application/json": {
                 "message" : "Je voudrais rejoindre l'équipe Baraka."
+              }
+            }
+          }
+        }
+      }
+    },
+    "restPassword": {
+      "get": {
+        "tags": ["Contact"],
+        "description": "Envoie d'un e-mail de re initilisation du mot de passe",
+        "summary": "Envoie d' e-mail pour re initiliser le mot de passe.",
+        "consumes": [
+          "application/json"
+        ],
+        "securitySchemes" :{
+          "bearerAuth": {
+            "type": "http"
+          }
+        },
+        "parameters": [
+        ],
+        "responses": {
+          "200": {
+            "description": "OK.",
+            "examples": {
+              "application/json": {
+                "message" : "Bonjour Baraka user, Pour lancer leprocessus de réinitilisation...."
+              }
+            }
+          }
+        }
+      }
+    },
+    "confirmRestPassword": {
+      "get": {
+        "tags": ["Contact"],
+        "description": "Confirmation changement du mot de passe",
+        "summary": "Confirmation du changement du mot de passe.",
+        "consumes": [
+          "application/json"
+        ],
+        "securitySchemes" :{
+          "bearerAuth": {
+            "type": "http"
+          }
+        },
+        "parameters": [
+        ],
+        "responses": {
+          "200": {
+            "description": "OK.",
+            "examples": {
+              "application/json": {
+                "message" : "Bonjour Baraka user, Votre mot de passe a été modifié avec succès...."
               }
             }
           }
