@@ -55,13 +55,17 @@ mongoose.connection.on("error", (err) => {
     console.log("Error connectiong to mongo", err);
 });
 
-app.get('',(req,res) => {
+app.get('/',(req,res) => {
     res.render('index', {
         environnement: "BARAKA API Pré Production",
         numberVersion: "2",
         currentYear: new Date().getFullYear() 
 
     });
+});
+
+app.get('*', function(req, res) {
+    res.redirect('/');
 });
 
 module.exports = app;

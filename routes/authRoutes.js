@@ -70,7 +70,8 @@ router.post(config.rootAPI+'/rest-password', async (req,res) => {
     try {
         const username =user.username;
         const userEmail = user.email;
-
+        const apiVersion = config.rootAPI;
+        
         //generate tmpLink  for the user
         user.generatePasswordReset();
 
@@ -78,7 +79,7 @@ router.post(config.rootAPI+'/rest-password', async (req,res) => {
         user.save();
 
         //send e-mail to user 
-        restPassword(username, userEmail, tmpLink, currentYear);
+        restPassword(username, userEmail, tmpLink, currentYear, apiVersion);
         res.status(200).send({ success: "OK" });
     } catch (err) {
         return res.status(422).send({error: "Une erreur s'est produite pour re intiliser votre mot de passe."});

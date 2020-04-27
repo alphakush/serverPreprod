@@ -25,7 +25,7 @@ const contactEmail = (email,objet, message) => {
     })
 }
 
-const restPassword = (name, email, tmpLink, currentYear) => {
+const restPassword = (name, email, tmpLink, currentYear, apiVersion) => {
     sgMail.send({
         to: email,
         from: 'contact-baraka@gmail.com',
@@ -34,7 +34,7 @@ const restPassword = (name, email, tmpLink, currentYear) => {
         `<html> Bonjour ${name}, <br><br>
 
 Pour lancer le processus de réinitialisation du mot de passe de votre compte Baraka avec l'email : ${email},<br><br> cliquez sur le lien ci-dessous valable une heure : <br><br>
-https://baraka-api.herokuapp.com/api/v1/restpassword/${tmpLink} <br><br>
+https://baraka-api.herokuapp.com${apiVersion}/restpassword/${tmpLink} <br><br>
 
 Si ce lien ne fonctionne pas, copiez l'URL, puis collez-la dans une nouvelle fenêtre de navigateur.<br><br>
         
