@@ -56,6 +56,14 @@ const barSchema = new mongoose.Schema({
         min: 0,
         max: 5
     },
+    sumNote:{
+        type: Number,
+        default: 0
+    },
+    counterPerson:{
+        type:Number,
+        default: 0
+    },
     image: {
         type: String,
         required: true,
@@ -91,7 +99,16 @@ const barSchema = new mongoose.Schema({
     timestamps: true
 });
 
+//Suppression du mot de passe de la response.
+barSchema.methods.toJSON = function () {
+    const user = this;
+    const barObject = user.toObject()
+
+    delete barObject.counterPerson
+    delete barObject.sumNote
+
+    return barObject
+}
+
 const Bar = mongoose.model('Bar', barSchema);
 module.exports = Bar;
-
-//mongoose.model('Bar',barSchema);

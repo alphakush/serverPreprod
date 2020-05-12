@@ -14,7 +14,17 @@ const FavoriteBarSchena = new mongoose.Schema({
     timestamps: true
 });
 
-mongoose.model('testBar', FavoriteBarSchena);
+const RatingBarSchena = new mongoose.Schema({
+    barID: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: 'Bar'
+    }
+}, {
+    timestamps: true
+});
+
+mongoose.model('barNote', FavoriteBarSchena);
 
 const userSchema = new mongoose.Schema({
     username: {
@@ -56,7 +66,8 @@ const userSchema = new mongoose.Schema({
         type: Date,
         required: false
     },
-    favorisBar: [FavoriteBarSchena]
+    favorisBar: [FavoriteBarSchena],
+    haveRationgBar : [RatingBarSchena]
 },{
     timestamps: true
 });
@@ -118,6 +129,7 @@ userSchema.methods.comparePassword = function (candidatePassword) {
     });
 };
 
+// Generate unique LINK for reset password.
 userSchema.methods.generatePasswordReset = function() {
     const user = this;
     user.resetPasswordToken = crypto.randomBytes(20).toString('hex');

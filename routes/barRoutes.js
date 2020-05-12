@@ -19,6 +19,10 @@ var options = {
     formatter: null
 };
 
+function roundHalf(num) {
+    return Math.round(num*2)/2;
+}
+
 var geocoder = NodeGeocoder(options);
 
 // Route pour OBTENIR TOUS les bars disponibles
@@ -276,7 +280,7 @@ router.post(config.rootAPI + '/bar/add-comment', checkingAuth, async (req, res) 
 });
 
 // Route pour LISTER les commentaires d'un bar donné.
-router.get(config.rootAPI + '/bar/all-comment/:barID', checkingAuth, async (req, res) => {
+router.get(config.rootAPI + '/bar/all-comment/:barID', async (req, res) => {
     try {
         const barID = req.params.barID;
         const userID = req.user._id; // id de l'utilisateur est retrouvé ici grâce au middleware (cad: checkingAuth).
@@ -333,7 +337,6 @@ router.get(config.rootAPI + '/bar/all-comment/:barID', checkingAuth, async (req,
     }
 });
 
-
 // Route pour AJOUTER UNE NOTE à un bar
 router.patch(config.rootAPI + '/bar/add-note', checkingAuth, async (req, res) => {
     try {
@@ -341,48 +344,33 @@ router.patch(config.rootAPI + '/bar/add-note', checkingAuth, async (req, res) =>
         const userID = req.user._id; // id de l'utilisateur est retrouvé ici grâce au middleware (cad: checkingAuth)
 
         if (!barID || !userID || !userNote) {
-            throw "Informations manquantes pour ajouter votre note.";
+            throw "Informations manquantes pour ajouter votre note.";     
         }
 
         if(userNote < 0 || userNote > 5) {
           throw "Informations manquantes pour ajouter votre note.";
         }
 
-        Bar.findByIdAndUpdate(barID,{$set: {note: userNote }}, function(err, result){
+        //Vérifie si on a déjà noter ce bar auparavant.
+        const user = await User.findById({ _id: userID });
+
+        //console.log(user);
+        //Prépare les requetes pour la sommation.
+        const bar = await Bar.findById({ _id: barID });
+       
+        const addToSumNote = bar.sumNote + userNote;
+        const addTocounterPerson = bar.counterPerson + 1;
+        const average = roundHalf(addToSumNote / addTocounterPerson); 
+
+        Bar.findByIdAndUpdate(barID,{$set: {note: average, sumNote: addToSumNote, counterPerson: addTocounterPerson  }}, function(err, result){
         if(err){
             throw 'Une erreur est survenue pour ajouter une note à ce bar.';
         }
         res.status(201).send({ success: "OK" });
-    });
+        });
     } catch (err) {
         res.status(422).send({ error: "Une erreur s'est pour ajouter votre note." });
     }
 });
-
-// Route pour CALCULER LA MOYENNE d'un bar.
-
-// //**
-// router.patch(config.rootAPI + '/updateCounterComment/:bar', checkingAuth, async (req, res) => {
-//     try {
-//       Bar.aggregate([
-//     { $match: { /* Query can go here, if you want to filter results. */ } },
-//     { $project: { commentaire: 1 } } /* select the tokens field as something we want to "send" to the next command in the chain */,
-//     { $unwind: '$commentaire' } /* this converts arrays into unique documents for counting */
-//   , { $group: { /* execute 'grouping' */
-//           _id: { commentaire: '$commentaire' } /* using the 'token' value as the _id */
-//         , count: { $sum: 1 } /* create a sum value */
-//       }
-//     }
-//   ], function(err, topTopics) {
-//       countTopics = topTopics.length;
-//       res.status(200).json(countTopics);
-//     });
-//
-//
-//     } catch (err) {
-//         res.status(422).send({ error: "Une erreur s'est pour retourner le nombre de commentaires" });
-//     }
-// });
-
 
 module.exports = router;
