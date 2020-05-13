@@ -17,6 +17,16 @@ const commentBarSchena = new mongoose.Schema({
     timestamps: true
 });
 
+const RatingBarSchena = new mongoose.Schema({
+    userID: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: 'User'
+    }
+}, {
+    timestamps: true
+});
+
 const barSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -95,6 +105,7 @@ const barSchema = new mongoose.Schema({
         },
         default: 0
     },
+    userAlreadyRate : [RatingBarSchena]
 },{
     timestamps: true
 });

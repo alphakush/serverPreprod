@@ -14,16 +14,6 @@ const FavoriteBarSchena = new mongoose.Schema({
     timestamps: true
 });
 
-const RatingBarSchena = new mongoose.Schema({
-    barID: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true,
-        ref: 'Bar'
-    }
-}, {
-    timestamps: true
-});
-
 mongoose.model('barNote', FavoriteBarSchena);
 
 const userSchema = new mongoose.Schema({
@@ -66,8 +56,7 @@ const userSchema = new mongoose.Schema({
         type: Date,
         required: false
     },
-    favorisBar: [FavoriteBarSchena],
-    haveRationgBar : [RatingBarSchena]
+    favorisBar: [FavoriteBarSchena]
 },{
     timestamps: true
 });
