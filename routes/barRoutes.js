@@ -72,7 +72,7 @@ const upload = multer({
     if (!file.originalname.match(/\.(png|jpg|jpeg)$/)) {
       return cb(
         new Error(
-          "Votre image doit être moins 1 mo et de format png, jpg ou jpeg. Merci de bien vérifer ses informations"
+          "Votre image doit être moins 5 mo et de format png, jpg ou jpeg. Merci de bien vérifer ses informations"
         )
       );
     }
@@ -343,21 +343,17 @@ router.post(
   checkingAuth,
   async (req, res) => {
     try {
-      const { userNote, comment, barID } = req.body;
+      const { comment, barID } = req.body;
       const userID = req.user._id; // id de l'utilisateur est retrouvé ici grâce au middleware (cad: checkingAuth)
 
-      if (!barID || !userID || !comment || !userNote) {
+      if (!barID || !userID || !comment) {
         throw "Une erreur s'est produite pour ajouter votre commentaire.";
-      }
-
-      if (userNote < 0 || userNote > 5) {
-        throw "Informations manquantes pour ajouter votre note.";
       }
 
       //retrouve le bar et ajoute un commentaire.
       const bar = await Bar.findById({ _id: barID });
 
-      bar.commentaire.push({ comment, author: userID, userNote });
+      bar.commentaire.push({ comment, author: userID });
 
       // Ajoute +1 au compteur currentCounterComment
       currentCounterComment = bar.counterComment + 1;
@@ -379,12 +375,10 @@ router.post(
 router.get(config.rootAPI + "/bar/all-comment/:barID", async (req, res) => {
   try {
     const barID = req.params.barID;
-    const userID = req.user._id; // id de l'utilisateur est retrouvé ici grâce au middleware (cad: checkingAuth).
 
-    if (!userID || !barID) {
+    if (!barID) {
       throw '"Informations manquantes, merci de vous authentifier !';
     }
-
     /*
         Explication: On trouve un bar par ID, ensuite on utilise populate à l'aide "ref "(cf Model User) pour afficher toutes les informations du l'utilisateur.
         *
@@ -427,6 +421,7 @@ router.get(config.rootAPI + "/bar/all-comment/:barID", async (req, res) => {
         }
       });
   } catch (err) {
+    console.log(err);
     res.status(422).send({
       error: "Une erreur s'est produite pour lister les commentaires.",
     });
@@ -470,7 +465,7 @@ router.patch(
       var id2 = mongoose.Types.ObjectId(userID.toString());
 
       if (subdocument.some((e) => e.userID.equals(id2))) {
-        res.status(422).send({ erreur: "Vous avez déjà noté ce bar." });
+        res.status(200).send({ success: "Vous avez déjà noté ce bar." });
       } else {
         //ajoute l'utilisateur dans la liste des utilisateurs qui ont noté ce bar.
         subdocument.push({ userID: userID });
@@ -497,10 +492,45 @@ router.patch(
           }
         );
       }
-
     } catch (err) {
-      console.log("ici");
-      res.status(422).send(err);
+      res
+        .status(422)
+        .send({ error: "Une erreur s'est pour ajouter votre note." });
+    }
+  }
+);
+
+// Route pour VERIFIER si ce bar a été déjà noter par un utilisateur
+router.get(
+  config.rootAPI + "/bar/check-note/:barID",
+  checkingAuth,
+  async (req, res) => {
+    try {
+      const barID = req.params.barID;
+      const userID = req.user._id; // id de l'utilisateur est retrouvé ici grâce au middleware (cad: checkingAuth)
+
+      if (!barID || !userID) {
+        throw "Informations manquantes pour ajouter votre note.";
+      }
+
+      //Vérifie si on a déjà noter ce bar auparavant.
+      const bar = await Bar.findOne({ _id: barID });
+
+      const subdocument = bar.userAlreadyRate;
+
+      var id2 = mongoose.Types.ObjectId(userID.toString());
+
+      if (subdocument.some((e) => e.userID.equals(id2))) {
+        res.status(200).send({ success: "Vous avez déjà noté ce bar." });
+      } else {
+        res
+          .status(200)
+          .send({ success: "Vous n'avez pas encore noté ce bar." });
+      }
+    } catch (err) {
+      res
+        .status(422)
+        .send({ error: "Une erreur s'est produite." });
     }
   }
 );
