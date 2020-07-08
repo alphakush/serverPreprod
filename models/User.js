@@ -17,6 +17,19 @@ const FavoriteBarSchena = new mongoose.Schema({
 mongoose.model('barNote', FavoriteBarSchena);
 
 const userSchema = new mongoose.Schema({
+    managerBarID: {
+        type: String
+    },
+    isBarManager: {
+        type: Boolean,
+        required: true, 
+        default: false
+    },
+    isAdmin: {
+        type: Boolean,
+        required: true, 
+        default: false
+    },
     username: {
         type: String,
         required: true,
@@ -41,7 +54,7 @@ const userSchema = new mongoose.Schema({
         trim: true,
         validate(value) {
             if(value.toLowerCase().includes('password')) {
-                throw new Error('Merci de ne pas utiliser "password" dans votre mot de passe!')
+                throw new Error('Merci de ne pas utiliser "password" dans votre mot de passe!');
             }
         }
     },
