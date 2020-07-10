@@ -56,10 +56,16 @@ const userSchema = new mongoose.Schema({
         type: Date,
         required: false
     },
-    favorisBar: [FavoriteBarSchena]
+    favorisBar: [FavoriteBarSchena],
+    accessLevel: {
+        type: Number,
+        require: false,
+        default: -1
+    }
 },{
     timestamps: true
 });
+
 
 //Suppression du mot de passe de la response.
 userSchema.methods.toJSON = function () {

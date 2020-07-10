@@ -16,7 +16,12 @@ module.exports  = (req, res, next) => {
         const {userId } = payload;
 
         //Une fois connecté on trouve l'user par ID dans la base de donnée.
-        const user = await User.findById(userId);
+        const user = await User.findOne({_id: userId});
+
+        if(user == null){
+            return res.status(401).send({error: 'Merci de vous connecter'});
+        }
+        
         req.user = user;
         next();
     });

@@ -1,6 +1,9 @@
+//Export model
+
 require('./models/User');
 require('./models/Bars');
 require('./models/Managers');
+require('./models/BarsTMP');
 
 const express = require('express');
 const mongoose = require('mongoose');
@@ -10,8 +13,11 @@ const config = require('./config');
 
 mongoose.set('useFindAndModify', false);
 
+// create const for routes.
 const authRoutes = require('./routes/authRoutes');
 const barRoutes = require('./routes/barRoutes');
+const barAdmin = require('./routes/barsAdmin');
+
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./documentation/swagger');
 const app = express();
@@ -38,8 +44,10 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 const publicDirectoryPath = path.join(__dirname+'../documentation/views');
 app.use(express.static(publicDirectoryPath));
 
+//use route
 app.use(authRoutes);
 app.use(barRoutes);
+app.use(barAdmin);
 
 mongoose.connect(process.env.MONGODB_URL,{
     useUnifiedTopology: true,

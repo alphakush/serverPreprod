@@ -34,7 +34,7 @@ const restPassword = (name, email, tmpLink, currentYear, apiVersion) => {
         `<html> Bonjour ${name}, <br><br>
 
 Pour lancer le processus de réinitialisation du mot de passe de votre compte Baraka avec l'email : ${email},<br><br> cliquez sur le lien ci-dessous valable une heure : <br><br>
-https://baraka-api.herokuapp.com${apiVersion}/restpassword/${tmpLink} <br><br>
+https://baraka-production.herokuapp.com${apiVersion}/restpassword/${tmpLink} <br><br>
 
 Si ce lien ne fonctionne pas, copiez l'URL, puis collez-la dans une nouvelle fenêtre de navigateur.<br><br>
         
@@ -66,9 +66,43 @@ A bientôt sur l'application Baraka.
 `
 })}
 
+const nowYouAreAdministator = (name, email) => {
+    sgMail.send({
+        to: email,
+        from: 'contact-baraka@gmail.com',
+        subject: `[Baraka] Changement d'accès lié à votre compte.`,
+        text: 
+        `
+Binvenue de l'autre coté ${name}, Votre compte à vu ses droits changer pour devenir administrateur et ouais ! 
+
+Vous pouvez boire à volonté/et changer les configurations à votre guisse.
+
+Attention, l'abus d'alcool est dangereux pour la santé, pour votre santé mangez 5 fruits.
+
+A bientôt sur l'application Baraka.
+`
+})}
+
+const nowYouAreManager = (name, email) => {
+    sgMail.send({
+        to: email,
+        from: 'contact-baraka@gmail.com',
+        subject: `[Baraka] Changement d'accès lié à votre compte.`,
+        text: 
+        `
+Bonjour ${name}, Votre compte à vu ses droits changer pour devenir manager d'un bar. 
+
+Vous pouvez contrôler votre bar à flow :) , 
+
+A bientôt sur l'application Baraka.
+`
+})}
+
 module.exports = {
     welcomeEmail,
     contactEmail,
     restPassword,
-    confirmRestPassword
+    confirmRestPassword,
+    nowYouAreAdministator,
+    nowYouAreManager
 }
